@@ -1,9 +1,8 @@
 #pragma once
 
-#include "game_object.hpp"
-#include "swap_chain.hpp"
-#include "pipeline.hpp"
 #include "device.hpp"
+#include "game_object.hpp"
+#include "renderer.hpp"
 #include "window.hpp"
 
 #include <memory>
@@ -25,21 +24,10 @@ class First_app {
 
  private:
   void loadGameObjects();
-  void createPipelineLayout();
-  void createPipeline();
-  void createCommandBuffers();
-  void freeCommandBuffers();
-  void drawFrame();
-  void recreateSwapChain();
-  void recordCommandBuffer(int imageIndex);
-  void renderGameObjects(VkCommandBuffer commandBuffer);
 
   LveWindow lveWindow{width, height, "VS Vulkan - Project 1"};
   LveDevice lveDevice{lveWindow};
-  std::unique_ptr<LveSwapChain> lveSwapChain;
-  std::unique_ptr<LvePipeline> PPipeline; //Smart Pointer (manage memory by itself | new, delete)
-  VkPipelineLayout pipelineLayout;
-  std::vector<VkCommandBuffer> commandBuffers;
+  LveRenderer lveRenderer{lveWindow, lveDevice};
   std::vector<LveGameObject> gameObjects;
 };
 } 
