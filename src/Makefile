@@ -1,4 +1,4 @@
-CFLAGS = -std=c++17 -I. -I/Users/mv-mac/VulkanSDK/1.3.243.0/macOS/include
+CFLAGS = -std=c++17 -I. -I/Users/mv-mac/VulkanSDK/1.3.243.0/macOS/include -I/Users/mv-mac/Documents/Projects/Objects
 LDFLAGS = -L/Users/mv-mac/VulkanSDK/1.3.243.0/macOS/lib `pkg-config --static --libs glfw3` -lvulkan
 
 # create list of all spv files and set as dependency

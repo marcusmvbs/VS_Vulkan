@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/homebrew/include/**",
-                "/usr/local/include/**"
+                "/usr/local/include/**",
+                "/Users/mv-mac/Documents/Projects/Objects/**"
             ],
             "defines": [],
             "macFrameworkPath": [
