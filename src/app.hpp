@@ -1,5 +1,6 @@
 #pragma once
 
+#include "descriptors.hpp"
 #include "device.hpp"
 #include "game_object.hpp"
 #include "renderer.hpp"
@@ -28,6 +29,9 @@ class First_app {
   LveWindow lveWindow{width, height, "VS Vulkan - Project 1"};
   LveDevice lveDevice{lveWindow};
   LveRenderer lveRenderer{lveWindow, lveDevice};
+
+  // note: order of declarations matters
+  std::unique_ptr<LveDescriptorPool> globalPool{};
   std::vector<LveGameObject> gameObjects;
 };
 } 

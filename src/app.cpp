@@ -23,22 +23,45 @@ struct GlobalUbo {
   glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
 };
 
-First_app::First_app() { loadGameObjects(); }
+First_app::First_app() {
+  globalPool =
+      LveDescriptorPool::Builder(lveDevice)
+          .setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+          .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+          .build();
+  loadGameObjects();
+}
 
 First_app::~First_app() {}
 
 void First_app::run() {
-    LveBuffer globalUboBuffer{
-      lveDevice,
-      sizeof(GlobalUbo),
-      LveSwapChain::MAX_FRAMES_IN_FLIGHT,
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-      lveDevice.properties.limits.minUniformBufferOffsetAlignment,
-    };
-    globalUboBuffer.map();
+    std::vector<std::unique_ptr<LveBuffer>> uboBuffers(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+  for (int i = 0; i < uboBuffers.size(); i++) {
+    uboBuffers[i] = std::make_unique<LveBuffer>(
+        lveDevice,
+        sizeof(GlobalUbo),
+        1,
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+    uboBuffers[i]->map();
+  }
 
-    SimpleRenderSystem simpleRenderSystem{lveDevice, lveRenderer.getSwapChainRenderPass()};
+  auto globalSetLayout = LveDescriptorSetLayout::Builder(lveDevice)
+          .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+          .build();
+
+  std::vector<VkDescriptorSet> globalDescriptorSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+  for (int i = 0; i < globalDescriptorSets.size(); i++) {
+    auto bufferInfo = uboBuffers[i]->descriptorInfo();
+    LveDescriptorWriter(*globalSetLayout, *globalPool)
+        .writeBuffer(0, &bufferInfo)
+        .build(globalDescriptorSets[i]);
+  }
+
+  SimpleRenderSystem simpleRenderSystem{
+      lveDevice,
+      lveRenderer.getSwapChainRenderPass(),
+      globalSetLayout->getDescriptorSetLayout()};
   LveCamera camera{};
 
   auto viewerObject = LveGameObject::createGameObject();
@@ -64,13 +87,18 @@ void First_app::run() {
     if (auto commandBuffer = lveRenderer.beginFrame()) {
       
       int frameIndex = lveRenderer.getFrameIndex();
-      FrameInfo frameInfo{frameIndex, frameTime, commandBuffer, camera};
+      FrameInfo frameInfo{
+          frameIndex,
+          frameTime,
+          commandBuffer,
+          camera,
+          globalDescriptorSets[frameIndex]};
 
       // update
       GlobalUbo ubo{};
       ubo.projectionView = camera.getProjection() * camera.getView();
-      globalUboBuffer.writeToIndex(&ubo, frameIndex);
-      globalUboBuffer.flushIndex(frameIndex);
+      uboBuffers[frameIndex]->writeToBuffer(&ubo);
+      uboBuffers[frameIndex]->flush();
 
       // render
       lveRenderer.beginSwapChainRenderPass(commandBuffer);
