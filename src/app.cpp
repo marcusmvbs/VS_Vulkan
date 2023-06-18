@@ -1,6 +1,7 @@
 #include "app.hpp"
 
 #include "keyboard.hpp"
+#include "buffer.hpp"
 #include "camera.hpp"
 #include "simple_render_system.hpp"
 
@@ -17,12 +18,27 @@
 
 namespace lve {
 
+struct GlobalUbo {
+  glm::mat4 projectionView{1.f};
+  glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+};
+
 First_app::First_app() { loadGameObjects(); }
 
 First_app::~First_app() {}
 
 void First_app::run() {
-      SimpleRenderSystem simpleRenderSystem{lveDevice, lveRenderer.getSwapChainRenderPass()};
+    LveBuffer globalUboBuffer{
+      lveDevice,
+      sizeof(GlobalUbo),
+      LveSwapChain::MAX_FRAMES_IN_FLIGHT,
+      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+      lveDevice.properties.limits.minUniformBufferOffsetAlignment,
+    };
+    globalUboBuffer.map();
+
+    SimpleRenderSystem simpleRenderSystem{lveDevice, lveRenderer.getSwapChainRenderPass()};
   LveCamera camera{};
 
   auto viewerObject = LveGameObject::createGameObject();
@@ -47,8 +63,19 @@ void First_app::run() {
     
     if (auto commandBuffer = lveRenderer.beginFrame()) {
       
+      int frameIndex = lveRenderer.getFrameIndex();
+      FrameInfo frameInfo{frameIndex, frameTime, commandBuffer, camera};
+
+      // update
+      GlobalUbo ubo{};
+      ubo.projectionView = camera.getProjection() * camera.getView();
+      globalUboBuffer.writeToIndex(&ubo, frameIndex);
+      globalUboBuffer.flushIndex(frameIndex);
+
+      // render
       lveRenderer.beginSwapChainRenderPass(commandBuffer);
-      simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
+      simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
+
       lveRenderer.endSwapChainRenderPass(commandBuffer);
       lveRenderer.endFrame();
     }
