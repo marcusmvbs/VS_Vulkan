@@ -12,8 +12,8 @@
 namespace lve {
 class First_app {
  public:
-  static const int width = 1920;
-  static const int height = 1080;
+  static const int width = 800;
+  static const int height = 600;
 
   First_app();
   ~First_app();
