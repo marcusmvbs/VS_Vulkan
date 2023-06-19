@@ -116,7 +116,7 @@ void First_app::run() {
 
 void First_app::loadGameObjects() {
   std::shared_ptr<LveModel> lveModel =
-    LveModel::createModelFromFile(lveDevice, "/Users/mv-mac/Documents/Projects/VS_Vulkan/src/models/flat_vase.obj");
+    LveModel::createModelFromFile(lveDevice, "models/flat_vase.obj");
   auto flatVase = LveGameObject::createGameObject();
   flatVase.model = lveModel;
   flatVase.transform.translation = {-.5f, .5f, 0.f};
