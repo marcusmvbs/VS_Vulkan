@@ -2,7 +2,7 @@
 #include "utils.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "/Users/mv-mac/Documents/Projects/Objects/tiny_obj_loader.h"
+#include "/Users/mv-mac/Documents/Projects/VS_Vulkan/external/tiny_obj_loader.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include "/opt/homebrew/include/glm/gtx/hash.hpp"
 
@@ -10,6 +10,10 @@
 #include <cassert>
 #include <cstring>
 #include <unordered_map>
+
+//#ifndef ENGINE_DIR
+//#define ENGINE_DIR "../"
+//#endif
 
 namespace std {
 template <>
