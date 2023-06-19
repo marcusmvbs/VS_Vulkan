@@ -35,12 +35,7 @@ void main() {
     float attenuation = 1.0 / dot(directionToLight, directionToLight); // distance squared
     float cosAngIncidence = max(dot(surfaceNormal, normalize(directionToLight)), 0);
     vec3 intensity = light.color.xyz * light.color.w * attenuation;
-
-  vec3 lightColor = ubo.lightColor.xyz * ubo.lightColor.w * attenuation;
-  vec3 ambientLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
-  vec3 diffuseLight = lightColor * max(dot(normalize(fragNormalWorld), normalize(directionToLight)), 0);
-  outColor = vec4((diffuseLight + ambientLight) * fragColor, 1.0);
-  diffuseLight += intensity * cosAngIncidence;
+    diffuseLight += intensity * cosAngIncidence;
   }
 
   outColor = vec4(diffuseLight * fragColor, 1.0);
